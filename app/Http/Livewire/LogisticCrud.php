@@ -3,10 +3,8 @@
 namespace App\Http\Livewire;
 
 use App\Models\Logistic;
-use App\Models\Production;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\Storage;
 use Livewire\WithFileUploads;
 use PDF;
 
@@ -22,14 +20,13 @@ class LogisticCrud extends Component
         ['search' => ['except' => '']],
     ];
 
-    public $logistic, $judul, $deskripsi, $tanggal_pakai, $upload, $logistics_id, $productions_id, $search;
+    public $logistic, $nama_barang, $satuan, $saldo_sebelumnya, $saldo_sekarang, $jumlah_pengeluaran, $tanggal_logistik, $logistics_id, $bulan, $search;
     public $isModalOpen = 0;
 
     public function render()
     {
-        $logistics = $this->search === null ?  Logistic::with('production')->latest()->paginate(5) : Logistic::where('judul', 'like', '%' . $this->search . '%')->latest()->paginate(5);
-        $production = Production::orderBy('created_at', 'desc')->get();
-        return view('livewire.logistic-crud', compact('production', 'logistics'));
+        $logistics = $this->search === null ?  Logistic::latest()->paginate(5) : Logistic::where('nama_barang', 'like', '%' . $this->search . '%')->latest()->paginate(5);
+        return view('livewire.logistic-crud', compact('logistics'));
     }
 
     public function create()
@@ -50,40 +47,38 @@ class LogisticCrud extends Component
 
     private function resetCreateForm()
     {
-        $this->productions_id = '';
-        $this->judul = '';
-
-
-        $this->deskripsi = '';
-        $this->tanggal_pakai = '';
-        $this->upload = '';
+        $this->nama_barang = '';
+        $this->satuan = '';
+        $this->jumlah_pengeluaran = '';
+        $this->tanggal_logistik = '';
+        $this->saldo_sebelumnya = '';
+        $this->saldo_sekarang = '';
     }
 
     public function store()
     {
         $this->validate([
-            'productions_id' => 'required',
-            'judul' => 'required',
-            'tanggal_pakai' => 'required',
-            'upload' => 'required|mimes:doc,docx,pdf',
+            'nama_barang' => 'required',
+            'satuan' => 'required',
+            'saldo_sebelumnya' => 'required',
+            'jumlah_pengeluaran' => 'required',
+            'tanggal_logistik' => 'required',
         ], [
-            'productions_id.required' => 'Silahkan Pilih Produksi',
-            'judul.required' => 'Judul Wajib Diisi',
-            'tanggal_pakai.required' => 'Silahkan Pilih Tanggal Terlebih Dahulu',
-            'upload.required' => 'Silahkan pilih file terlebih dahulu',
-            'upload.mimes' => 'Hanya bisa upload file extensi .doc, .docx, dan .pdf'
+            'nama_barang.required' => 'Nama Barang Wajib Diisi',
+            'satuan.required' => 'Satuan Wajib Diisi',
+            'saldo_sebelumnya.required' => 'Saldo Sebelumnya Wajib Diisi',
+            'jumlah_pengeluaran.required' => 'Jumlah Pengeluaran Wajib Diisi',
+            'tanggal_logistik.required' => 'Pilih Tanggal Logistik Terlebih Dahulu',
         ]);
 
-        $filename = $this->storeFile();
 
         Logistic::updateOrCreate(['id' => $this->logistics_id], [
-            'productions_id' => $this->productions_id,
-            'judul' => $this->judul,
-
-
-            'deskripsi' => $this->deskripsi,
-            'tanggal_pakai' => $this->tanggal_pakai,
-            'upload' => $this->upload->storeAs('file', $filename, 'public'),
+            'nama_barang' => $this->nama_barang,
+            'satuan' => $this->satuan,
+            'tanggal_logistik' => $this->tanggal_logistik,
+            'jumlah_pengeluaran' => $this->jumlah_pengeluaran,
+            'saldo_sebelumnya' => $this->saldo_sebelumnya,
+            'saldo_sekarang' => $this->saldo_sebelumnya - $this->jumlah_pengeluaran,
         ]);
 
         session()->flash('message', $this->logistics_id ? 'Data berhasil diupdate.' : 'Data berhasil ditambahkan.');
@@ -96,18 +91,13 @@ class LogisticCrud extends Component
     {
         $logistic = Logistic::findOrFail($id);
 
-        $file = public_path('storage/') . $logistic->upload;
-        if (file_exists($file)) {
-            @unlink($file);
-        }
-        Storage::delete($file);
-
         $this->logistics_id = $id;
-        $this->productions_id = $logistic->productions_id;
-        $this->judul = $logistic->judul;
-        $this->deskripsi = $logistic->deskripsi;
-        $this->tanggal_pakai = $logistic->tanggal_pakai;
-        $this->upload = $logistic->upload;
+        $this->nama_barang = $logistic->nama_barang;
+        $this->satuan = $logistic->satuan;
+        $this->tanggal_logistik = $logistic->tanggal_logistik;
+        $this->jumlah_pengeluaran = $logistic->jumlah_pengeluaran;
+        $this->saldo_sebelumnya = $logistic->saldo_sebelumnya;
+        $this->saldo_sekarang = $logistic->saldo_sebelumnya - $logistic->jumlah_pengeluaran;
 
         $this->openModal();
     }
@@ -115,25 +105,13 @@ class LogisticCrud extends Component
     public function delete($id)
     {
         $logistic = Logistic::findOrFail($id);
-        $file = public_path('storage/') . $logistic->upload;
-        if (file_exists($file)) {
-            @unlink($file);
-        }
         $logistic->delete();
         session()->flash('message', 'Data berhasil dihapus.');
     }
 
-    public function storeFile()
-    {
-        $file = $this->upload;
-        $filename = $file->getClientOriginalName();
-
-        return $filename;
-    }
-
     public function exportPDF()
     {
-        $logistic = Logistic::with('production')->latest()->get();
+        $logistic = Logistic::whereMonth('tanggal_logistik', $this->bulan)->get();
 
         $pdf = PDF::loadView('livewire.logistic.report', compact('logistic'))->output();
         return response()->streamDownload(

@@ -2,7 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Livewire\LogisticCrud;
-use App\Http\Livewire\ProductionCrud;
+use App\Http\Livewire\Production\CupCrud;
+use App\Http\Livewire\Production\GallonCrud;
 use App\Http\Livewire\QualityControlCrud;
 use Illuminate\Support\Facades\Route;
 
@@ -18,18 +19,18 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('auth.login');
+    return view('welcome');
 });
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::get('logistic', LogisticCrud::class)->name('logistic');
 
-    Route::get('production', ProductionCrud::class)->name('production');
+    Route::get('production/cup', CupCrud::class)->name('cup');
+
+    Route::get('production/gallon', GallonCrud::class)->name('gallon');
 
     Route::get('quality-control', QualityControlCrud::class)->name('quality-control');
 
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 });
-
-// Route::get('redirect', DashboardController::class);

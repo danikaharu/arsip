@@ -14,8 +14,11 @@
                 </div>
             </div>
             @endif
-            <button wire:click="exportPDF()" class="btn btn-danger my-3"><i class="fas fa-file-pdf"></i> Cetak PDF</button>
-            <button wire:click="create()" class="btn btn-primary my-3"><i class="fas fa-plus-square"></i> Tambah Data</button>
+            <button type="button" class="btn btn-info my-3" data-toggle="modal" data-target="#exampleModal"><i class="fas fa-file-pdf"></i>Laporan Bulanan</button>
+            @if(auth()->user()->role == '1')
+               <button wire:click="create()" class="btn btn-primary my-3"><i class="fas fa-plus-square"></i> Tambah Data</button>  
+            @endif
+    
             @if($isModalOpen)
             @include('livewire.logistic.create')
             @endif
@@ -28,10 +31,10 @@
                 <thead>
                     <tr>
                         <th>No.</th>
-                        <th>Judul</th>
-                        <th>Produksi</th>
-                        <th>Deskripsi</th>
-                        <th>Tanggal Pakai</th>
+                        <th>Barang</th>
+                        <th>Saldo Sekarang</th>
+                        <th>Jumlah Pengeluaran</th>
+                        <th>Tanggal Logistik</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -39,17 +42,16 @@
                     @forelse ($logistics as $data)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $data->judul }}</td>
-                        <td>@if($data->production)
-                            {{ $data->production->judul }}
-                            @endif 
-                        </td>
-                        <td>{{ $data->deskripsi }}</td>
-                        <td>{{ $data->tanggal_pakai }}</td>
+                        <td>{{ $data->nama_barang }} - {{ $data->satuan }}</td>
+                        <td>{{ $data->saldo_sekarang }}</td>
+                        <td>{{ $data->jumlah_pengeluaran }}</td>
+                        <td>{{ $data->tanggal_logistik }}</td>
                         <td>
-                            <a href="{{ Storage::url($data->upload) }}" target="pdf-frame" class="btn btn-warning btn-md my-2">Lihat Dokumen</a>
+                            {{-- <a href="{{ Storage::url($data->upload) }}" target="pdf-frame" class="btn btn-warning btn-md my-2">Lihat Dokumen</a> --}}
+                             @if(auth()->user()->role == '1')
                             <button wire:click="edit({{ $data->id }})" class="btn btn-primary btn-md my-2">Edit</button>
                             <button wire:click="delete({{ $data->id }})" class="btn btn-danger btn-md my-2">Hapus</button>
+                            @endif
                         </td>
                     </tr>
                     @empty
@@ -62,6 +64,42 @@
             <div class="ml-md-4">
                 {{ $logistics->links() }}
             </div>
+
+            {{-- Report Modal --}}
+            <div wire:ignore.self class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Laporan Bulanan</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true close-btn">×</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <select class="form-control" wire:model="bulan">
+                                <option>-- Pilih Bulan --</option>
+                                <option value="1">Januari</option>
+                                <option value="2">Februari</option>
+                                <option value="3">Maret</option>
+                                <option value="4">April</option>
+                                <option value="5">Mei</option>
+                                <option value="6">Juni</option>
+                                <option value="7">Juli</option>
+                                <option value="8">Agustus</option>
+                                <option value="9">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>   
+                        </div>
+                        <div class="modal-footer">
+                           <button type="button" class="btn btn-secondary close-btn" data-dismiss="modal">Close</button>
+                           <button type="button" wire:click.prevent="exportPDF()" class="btn btn-primary close-modal">Cetak</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

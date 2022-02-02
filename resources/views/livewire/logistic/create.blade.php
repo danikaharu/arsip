@@ -3,35 +3,35 @@
         <div class="card-body">
             <div class="form-group">
                 <div class="mb-4">
-                    <label for="judul">Judul</label>
-                    <input type="text" class="form-control @error('judul') is-invalid @enderror" wire:model="judul">
-                    @error('judul') <span class="invalid-feedback">{{ $message }}</span>@enderror
+                    <label for="nama_barang">Nama Barang</label>
+                    <input type="text" class="form-control @error('nama_barang') is-invalid @enderror" wire:model="nama_barang">
+                    @error('nama_barang') <span class="invalid-feedback">{{ $message }}</span>@enderror
                 </div>
                 <div class="mb-4">
-                    <label for="produksi">Produksi</label>
-                    <select wire:model="productions_id" class="form-control @error('productions_id') is-invalid @enderror ">
-                        <option>-- Pilih Produksi --</option>
-                        @foreach ($production as $data)
-                        <option value="{{ $data->id }}">{{ $data->judul }}</option>
-                        @endforeach
-                    </select>
-                    @error('productions_id') <span class="invalid-feedback">{{ $message }}</span>@enderror
+                    <label for="satuan">Satuan</label>
+                    <input type="text" class="form-control @error('satuan') is-invalid @enderror" wire:model="satuan">
+                    @error('satuan') <span class="invalid-feedback">{{ $message }}</span>@enderror
                 </div>
                 <div class="mb-4">
-                    <label for="deskripsi">Deskripsi</label>
-                    <textarea class="form-control @error('deskripsi') is-invalid @enderror" wire:model="deskripsi"></textarea>
-                    @error('deskripsi') <span class="invalid-feedback">{{ $message }}</span>@enderror
+                    <label for="saldo_sebelumnya">Saldo Sebelumnya</label>
+                    <input type="text" class="form-control @error('saldo_sebelumnya') is-invalid @enderror" wire:model="saldo_sebelumnya">
+                    @error('saldo_sebelumnya') <span class="invalid-feedback">{{ $message }}</span>@enderror
                 </div>
                 <div class="mb-4">
-                    <label for="tanggalPakai">Tanggal Pakai</label>
-                    <input type="date" class="form-control @error('tanggal_pakai') is-invalid @enderror" wire:model="tanggal_pakai">
-                    @error('tanggal_pakai') <span class="invalid-feedback">{{ $message }}</span>@enderror
+                    <label for="jumlah_pengeluaran">Jumlah Pengeluaran</label>
+                    <input type="text" class="form-control @error('jumlah_pengeluaran') is-invalid @enderror" wire:model="jumlah_pengeluaran">
+                    @error('jumlah_pengeluaran') <span class="invalid-feedback">{{ $message }}</span>@enderror
                 </div>
                 <div class="mb-4">
+                    <label for="tanggal_logistik">Tanggal Logistik</label>
+                    <input type="date" class="form-control @error('tanggal_logistik') is-invalid @enderror" wire:model="tanggal_logistik">
+                    @error('tanggal_logistik') <span class="invalid-feedback">{{ $message }}</span>@enderror
+                </div>
+                {{-- <div class="mb-4">
                     <label for="upload">Upload Dokumen</label>
                     <input type="file" class="form-control @error('upload') is-invalid @enderror" wire:model="upload">
                     @error('upload') <span class="invalid-feedback">{{ $message }}</span>@enderror
-                </div>
+                </div> --}}
             </div>
         </div>
         <div class="card-footer">

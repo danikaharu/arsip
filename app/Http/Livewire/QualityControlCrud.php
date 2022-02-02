@@ -3,15 +3,13 @@
 namespace App\Http\Livewire;
 
 use App\Models\QualityControl;
-use Illuminate\Support\Facades\Storage;
+use App\Models\TestComponent;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use PDF;
 
 class QualityControlCrud extends Component
 {
-    use WithFileUploads;
     use WithPagination;
 
     protected $paginationTheme = 'bootstrap';
@@ -21,12 +19,16 @@ class QualityControlCrud extends Component
         ['search' => ['except' => '']],
     ];
 
-    public $quality, $judul, $tanggal, $deskripsi, $upload, $qualities_id, $search;
+    public $quality, $qualities_id, $tanggal, $jam_pagi, $jam_sore;
+    public $tds_airbaku_pagi, $tds_airbaku_sore, $tds_setengahjadi_pagi, $tds_setengahjadi_sore, $tds_jadi_pagi, $tds_jadi_sore;
+    public $ph_airbaku_pagi, $ph_airbaku_sore, $ph_setengahjadi_pagi, $ph_setengahjadi_sore, $ph_jadi_pagi, $ph_jadi_sore;
+    public $search, $bulan;
+    public $kekeruhan, $rasa, $bau;
     public $isModalOpen = 0;
 
     public function render()
     {
-        $qualities = $this->search === null ?  QualityControl::latest()->paginate(5) : QualityControl::where('judul', 'like', '%' . $this->search . '%')->latest()->paginate(5);
+        $qualities = $this->search === null ?  QualityControl::latest()->paginate(5) : QualityControl::where('tanggal', 'like', '%' . $this->search . '%')->latest()->paginate(5);
         return view('livewire.quality-control-crud', compact('qualities'));
     }
 
@@ -48,33 +50,89 @@ class QualityControlCrud extends Component
 
     private function resetCreateForm()
     {
-        $this->judul = '';
         $this->tanggal = '';
-        $this->upload = '';
+        $this->jam_pagi = '';
+        $this->jam_sore = '';
+        $this->tds_airbaku_pagi = '';
+        $this->tds_airbaku_sore = '';
+        $this->tds_setengahjadi_pagi = '';
+        $this->tds_setengahjadi_sore = '';
+        $this->tds_jadi_pagi = '';
+        $this->tds_jadi_sore = '';
+        $this->ph_airbaku_pagi = '';
+        $this->ph_airbaku_sore = '';
+        $this->ph_setengahjadi_pagi = '';
+        $this->ph_setengahjadi_sore = '';
+        $this->ph_jadi_pagi = '';
+        $this->ph_jadi_sore = '';
+        $this->kekeruhan = '';
+        $this->rasa = '';
+        $this->bau = '';
     }
 
     public function store()
     {
         $this->validate([
-            'judul' => 'required',
             'tanggal' => 'required',
-            'upload' => 'required|mimes:doc,docx,pdf',
+            'jam_pagi' => 'required',
+            'jam_sore' => 'required',
+            'tds_airbaku_pagi' => 'required',
+            'tds_airbaku_sore' => 'required',
+            'tds_setengahjadi_pagi' => 'required',
+            'tds_setengahjadi_sore' => 'required',
+            'tds_jadi_pagi' => 'required',
+            'tds_jadi_sore' => 'required',
+            'ph_airbaku_pagi' => 'required',
+            'ph_airbaku_sore' => 'required',
+            'ph_setengahjadi_pagi' => 'required',
+            'ph_setengahjadi_sore' => 'required',
+            'ph_jadi_pagi' => 'required',
+            'ph_jadi_sore' => 'required',
+            'kekeruhan' => 'required',
+            'rasa' => 'required',
+            'bau' => 'required',
         ], [
-            'judul.required' => 'Kode Kotak Wajib Diisi',
-            'tanggal.required' => 'judul Kotak Wajib Diisi',
-            'upload.required' => 'Silahkan pilih file terlebih dahulu',
-            'upload.mimes' => 'Hanya bisa upload file extensi .doc, .docx, dan .pdf'
+            'tanggal.required' => 'Pilih tanggal terlebih dahulu',
+            'jam_pagi.required' => 'Waktu pengecekan tidak boleh kosong',
+            'jam_sore.required' => 'Waktu pengecekan tidak boleh kosong',
+            'tds_airbaku_pagi.required' => 'Kolom tidak boleh kosong',
+            'tds_airbaku_sore.required' => 'Kolom tidak boleh kosong',
+            'tds_setengahjadi_pagi.required' => 'Kolom tidak boleh kosong',
+            'tds_setengahjadi_sore.required' => 'Kolom tidak boleh kosong',
+            'tds_jadi_pagi.required' => 'Kolom tidak boleh kosong',
+            'tds_jadi_sore.required' => 'Kolom tidak boleh kosong',
+            'ph_airbaku_pagi.required' => 'Kolom tidak boleh kosong',
+            'ph_airbaku_sore.required' => 'Kolom tidak boleh kosong',
+            'ph_setengahjadi_pagi.required' => 'Kolom tidak boleh kosong',
+            'ph_setengahjadi_sore.required' => 'Kolom tidak boleh kosong',
+            'ph_jadi_pagi.required' => 'Kolom tidak boleh kosong',
+            'ph_jadi_sore.required' => 'Kolom tidak boleh kosong',
+            'kekeruhan.required' => 'Kolom tidak boleh kosong',
+            'rasa.required' => 'Kolom tidak boleh kosong',
+            'bau.required' => 'Kolom tidak boleh kosong',
         ]);
-
-        $filename = $this->storeFile();
 
         QualityControl::updateOrCreate(
             ['id' => $this->qualities_id],
             [
-                'judul' => $this->judul,
                 'tanggal' => $this->tanggal,
-                'deskripsi' => $this->deskripsi,
-                'upload' => $this->upload->storeAs('file', $filename, 'public'),
+                'jam_pagi' => $this->jam_pagi,
+                'jam_sore' => $this->jam_sore,
+                'tds_airbaku_pagi' => $this->tds_airbaku_pagi,
+                'tds_airbaku_sore' => $this->tds_airbaku_sore,
+                'tds_setengahjadi_pagi' => $this->tds_setengahjadi_pagi,
+                'tds_setengahjadi_sore' => $this->tds_setengahjadi_sore,
+                'tds_jadi_pagi' => $this->tds_jadi_pagi,
+                'tds_jadi_sore' => $this->tds_jadi_sore,
+                'ph_airbaku_pagi' => $this->ph_airbaku_pagi,
+                'ph_airbaku_sore' => $this->ph_airbaku_sore,
+                'ph_setengahjadi_pagi' => $this->ph_setengahjadi_pagi,
+                'ph_setengahjadi_sore' => $this->ph_setengahjadi_sore,
+                'ph_jadi_pagi' => $this->ph_jadi_pagi,
+                'ph_jadi_sore' => $this->ph_jadi_sore,
+                'kekeruhan' => $this->kekeruhan,
+                'rasa' => $this->rasa,
+                'bau' => $this->bau,
             ]
         );
 
@@ -88,48 +146,58 @@ class QualityControlCrud extends Component
     {
         $quality = QualityControl::findOrFail($id);
 
-        $file = public_path('storage/') . $quality->upload;
-        if (file_exists($file)) {
-            @unlink($file);
-        }
-        Storage::delete($file);
-
         $this->qualities_id = $id;
-        $this->judul = $quality->judul;
         $this->tanggal = $quality->tanggal;
-        $this->deskripsi = $quality->deskripsi;
-        $this->upload = $quality->upload;
+        $this->jam_pagi = $quality->jam_pagi;
+        $this->jam_sore = $quality->jam_sore;
+        $this->tds_airbaku_pagi = $quality->tds_airbaku_pagi;
+        $this->tds_airbaku_sore = $quality->tds_airbaku_sore;
+        $this->tds_setengahjadi_pagi = $quality->tds_setengahjadi_pagi;
+        $this->tds_setengahjadi_sore = $quality->tds_setengahjadi_sore;
+        $this->tds_jadi_pagi = $quality->tds_jadi_pagi;
+        $this->tds_jadi_sore = $quality->tds_jadi_sore;
+        $this->ph_airbaku_pagi = $quality->ph_airbaku_pagi;
+        $this->ph_airbaku_sore = $quality->ph_airbaku_sore;
+        $this->ph_setengahjadi_pagi = $quality->ph_setengahjadi_pagi;
+        $this->ph_setengahjadi_sore = $quality->ph_setengahjadi_sore;
+        $this->ph_jadi_pagi = $quality->ph_jadi_pagi;
+        $this->ph_jadi_sore = $quality->ph_jadi_sore;
+        $this->kekeruhan = $quality->kekeruhan;
+        $this->rasa = $quality->rasa;
+        $this->bau = $quality->bau;
 
         $this->openModal();
     }
 
     public function delete($id)
     {
-        $quality = QualityControl::find($id)->delete();
-        $file = public_path('storage/') . $quality->upload;
-        if (file_exists($file)) {
-            @unlink($file);
-        }
-        $quality->delete();
+        QualityControl::find($id)->delete();
         session()->flash('message', 'Data berhasil dihapus.');
     }
 
-    public function storeFile()
+    public function exportPDFPerDate()
     {
-        $file = $this->upload;
-        $filename = $file->getClientOriginalName();
+        foreach (QualityControl::all() as $qualities) {
+            $quality = QualityControl::where('tanggal', $qualities->tanggal)->first();
 
-        return $filename;
+            $pdf = PDF::loadView('livewire.quality-control.report-daily', compact('quality'))->output();
+            return response()->streamDownload(
+                fn () => print($pdf),
+                "laporan-qc.pdf"
+            );
+        }
     }
 
-    public function exportPDF()
+    public function exportPDFPerMonth()
     {
-        $qualities = QualityControl::all();
+        foreach (QualityControl::all() as $qualities) {
+            $quality = QualityControl::whereMonth('created_at', $this->bulan)->get();
 
-        $pdf = PDF::loadView('livewire.quality-control.report', compact('qualities'))->output();
-        return response()->streamDownload(
-            fn () => print($pdf),
-            "laporan-produksi.pdf"
-        );
+            $pdf = PDF::loadView('livewire.quality-control.report-monthly', compact('quality'))->setPaper('a4', 'landscape')->output();
+            return response()->streamDownload(
+                fn () => print($pdf),
+                "laporan-qc.pdf"
+            );
+        }
     }
 }
